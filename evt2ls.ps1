@@ -32,8 +32,7 @@ Function Dump2Logstash {
 		echo "Processing:"
 		echo $event
 		# Convert to a 1-line JSON event
-		$x = $event | ConvertTo-Json -depth 3
-		$x= $x -replace "`n",' ' -replace "`r",''
+		$x = $event | ConvertTo-Json -depth 3 -Compress
 
 		$writer.WriteLine($x)
 		$writer.Flush()
