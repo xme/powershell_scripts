@@ -6,12 +6,14 @@
 #
 # History
 # 2013/09/17	: Created
+# 2019/10/17	: Modified
 #
 param(
 	[string]$log = "Security",
 	[string]$eventid = "",
 	[string]$pattern = "",
 	[switch]$details = $false,
+	[switch]$colour  = $false,
 	[switch]$verbose = $false,
 	[switch]$help = $false
 )
@@ -21,14 +23,22 @@ if ($help -eq $true)
 	Write-Host "Usage: tail.ps1 [-log=<eventlog>,<eventlog>,...]
                 [-eventid=<id>,<id>,...]
                 [-pattern=<regex>]
+                [-colour]
                 [-details]
                 [-verbose]
-                [-help]"
+                [-help]
+				
+                e.g. 
+                tail -log ""My Service"" => reads new messages from My Service event source. C3 Service is the default.
+                tail -pattern ERROR => shows only the lines matching the word ""ERROR""
+                tail -pattern ""New ERROR"" => shows only the lines matching ""New ERROR""
+                tail -pattern word_I_want_to_look_for -colour => shows all the lines and the matching ones in red
+                "
 	exit
 }
 
-$eventlogs = $log.split(" ")
-$eventids = $eventid.split(" ")
+$eventlogs = $log.split(",")
+$eventids = $eventid.split(",")
 $idx = 0
 $old = new-object object[] 10
 $new = new-object object[] 10
@@ -71,12 +81,19 @@ while ($true)
             }
           }
           else {
-            if ($line.message -match $pattern) {
-              if ($details -eq $false) {
+            if ($colour) {
+              if ($line.message -match $pattern) {
+                [Console]::ForegroundColor = "red"
                 $line
+                [Console]::ResetColor()
               }
               else {
-                $line | format-list
+                $line
+              }
+            }
+            else {
+              if ($line.message -match $pattern) {
+                $line
               }
             }
           }
